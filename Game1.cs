@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MonoDryWorld
 {
@@ -83,9 +84,29 @@ namespace MonoDryWorld
                 Exit();
 
             // Math Simulation Loop
+            
+            int most_red_creature = -999;
+            int most_red_X = 0;
+            int most_red_Y = 0;
             for (int i = 0; i < _creatures.Count; i++)
             {
                 var creature = _creatures[i];
+                int redness = creature.Color.R - creature.Color.G - creature.Color.B;
+                if (redness > most_red_creature)
+                {
+                    most_red_creature = redness;
+                    most_red_X = (int)creature.Position.X;
+                    most_red_Y = (int)creature.Position.Y;
+                }
+            }
+
+            for (int i = 0; i < _creatures.Count; i++)
+            {
+                var creature = _creatures[i];
+
+                int redness = creature.Color.R - creature.Color.G - creature.Color.B;
+                // Print out redness values
+                // Console.WriteLine($"Creature {i} - Redness: {redness}"); 
 
                 int newX = (int)(creature.Position.X + creature.Velocity.X);
                 int newY = (int)(creature.Position.Y + creature.Velocity.Y);
@@ -93,6 +114,20 @@ namespace MonoDryWorld
                 // Screen bounds collision
                 newX = Math.Clamp(newX, 0, _screenWidth - 1);
                 newY = Math.Clamp(newY, 0, _screenHeight - 1);
+
+                // Make the velocity just towards the most red creature
+                Vector2 directionToMostRed = new Vector2(most_red_X, most_red_Y) - creature.Position;
+                if (directionToMostRed != Vector2.Zero)
+                {
+                    // directionToMostRed.Normalize();
+                    creature.Velocity = directionToMostRed; // Speed of 1 pixel per frame
+                    // Round to integers -1 0 or 1 for grid movement
+                    creature.Velocity = new Vector2((float)Math.Round(creature.Velocity.X), (float)Math.Round(creature.Velocity.Y));
+                    if (creature.Velocity.X > 1) creature.Velocity = new Vector2(1, creature.Velocity.Y);
+                    if (creature.Velocity.X < -1) creature.Velocity = new Vector2(-1, creature.Velocity.Y);
+                    if (creature.Velocity.Y > 1) creature.Velocity = new Vector2(creature.Velocity.X, 1);
+                    if (creature.Velocity.Y < -1) creature.Velocity = new Vector2(creature.Velocity.X, -1);
+                }
 
                 // O(1) Terrain Collision: Just check the grid array directly!
                 if (_terrain[newX, newY] == 1)
