@@ -177,13 +177,13 @@ namespace MonoDryWorld
             // Perimeter walls
             for (int x = 0; x < _screenWidth; x++)
             {
-                _terrain[x, 1] = 1;
-                _terrain[x, _screenHeight - 2] = 1;
+                _terrain[x, 0] = 1;
+                _terrain[x, _screenHeight - 1] = 1;
             }
             for (int y = 0; y < _screenHeight; y++)
             {
-                _terrain[1, y] = 1;
-                _terrain[_screenWidth - 2, y] = 1;
+                _terrain[0, y] = 1;
+                _terrain[_screenWidth - 1, y] = 1;
             }
         }
 
