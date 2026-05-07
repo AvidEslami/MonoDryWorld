@@ -73,7 +73,7 @@ namespace MonoDryWorld
             _pixelTexture.SetData(new[] { Color.White });
 
             // Dynamically generate a circle texture (radius 8)
-            _circleTexture = CreateCircleTexture(8);
+            _circleTexture = CreateCircleTexture(3);
         }
 
         protected override void Update(GameTime gameTime)
@@ -97,8 +97,29 @@ namespace MonoDryWorld
                 // O(1) Terrain Collision: Just check the grid array directly!
                 if (_terrain[newX, newY] == 1)
                 {
-                    // Reverse velocity on bounce
-                    creature.Velocity = new Vector2(-creature.Velocity.X, -creature.Velocity.Y);
+                    // Check if it's a horizontal or vertical wall by looking at whether or not a change in X or Y would avoid the collision
+                    bool horizontalCollision = _terrain[(int)creature.Position.X, newY] == 1;
+                    bool verticalCollision = _terrain[newX, (int)creature.Position.Y] == 1;
+                    if (horizontalCollision && verticalCollision)
+                    {
+                        // Both directions blocked, reverse both velocities
+                        creature.Velocity = -creature.Velocity;
+                    }
+                    else if (horizontalCollision)
+                    {
+                        // Only horizontal blocked, reverse Y velocity
+                        creature.Velocity = new Vector2(creature.Velocity.X, -creature.Velocity.Y);
+                    }
+                    else if (verticalCollision)
+                    {
+                        // Only vertical blocked, reverse X velocity
+                        creature.Velocity = new Vector2(-creature.Velocity.X, creature.Velocity.Y);
+                    }
+                    else
+                    {
+                        // Log something weird
+                        Console.WriteLine("Unexpected collision state: no adjacent walls but collision detected!");
+                    }
                 }
                 else
                 {
